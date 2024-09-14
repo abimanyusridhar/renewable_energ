@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fertilizer Recommendation System</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            background-color: #f9fafb;
+            font-family: 'Roboto', sans-serif;
+        }
+        .form-container {
+            background-color: #ffffff;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            margin: 60px auto;
+        }
+        .form-group label {
+            color: #333333;
+            font-weight: 600;
+        }
+        .form-control {
+            padding: 12px;
+            border-radius: 8px;
+            border: 2px solid #007bff;
+        }
+        .btn-primary {
+            background-color: #007bff;
+            border-color: #007bff;
+            padding: 12px;
+            font-size: 1.2rem;
+        }
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+        .prediction-result {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #28a745;
+            margin-top: 20px;
+        }
+        .title {
+            text-align: center;
+            font-size: 2.5rem;
+            color: #343a40;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+        .analytics-btn {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="title">Fertilizer Recommendation</h1>
+        <div class="form-container">
+            <form id="predictForm">
+                <div class="form-group">
+                    <label for="soil_type">Soil Type</label>
+                    <input type="text" class="form-control" id="soil_type" placeholder="Enter Soil Type" required>
+                </div>
+                <div class="form-group">
+                    <label for="crop_type">Crop Type</label>
+                    <input type="text" class="form-control" id="crop_type" placeholder="Enter Crop Type" required>
+                </div>
+                <div class="form-group">
+                    <label for="temperature">Temperature (°C)</label>
+                    <input type="number" class="form-control" id="temperature" step="0.1" placeholder="Enter Temperature" required>
+                </div>
+                <div class="form-group">
+                    <label for="humidity">Humidity (%)</label>
+                    <input type="number" class="form-control" id="humidity" step="0.1" placeholder="Enter Humidity" required>
+                </div>
+                <div class="form-group">
+                    <label for="moisture">Moisture (%)</label>
+                    <input type="number" class="form-control" id="moisture" step="0.1" placeholder="Enter Moisture" required>
+                </div>
+                <div class="form-group">
+                    <label for="nitrogen">Nitrogen (%)</label>
+                    <input type="number" class="form-control" id="nitrogen" step="0.1" placeholder="Enter Nitrogen" required>
+                </div>
+                <div class="form-group">
+                    <label for="potassium">Potassium (%)</label>
+                    <input type="number" class="form-control" id="potassium" step="0.1" placeholder="Enter Potassium" required>
+                </div>
+                <div class="form-group">
+                    <label for="phosphorous">Phosphorous (%)</label>
+                    <input type="number" class="form-control" id="phosphorous" step="0.1" placeholder="Enter Phosphorous" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Get Recommendation</button>
+            </form>
+            <div id="predictionResult" class="prediction-result"></div>
+            <button class="btn btn-secondary analytics-btn btn-block" onclick="window.location.href='/analytics'">View Analytics</button>
+        </div>
+    </div>
+    <div class="footer">
+        <p>&copy; 2024 Fertilizer Recommendation System. All rights reserved.</p>
+    </div>
+
+    <script>
+        document.getElementById('predictForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const soilType = document.getElementById('soil_type').value;
+            const cropType = document.getElementById('crop_type').value;
+            const temperature = document.getElementById('temperature').value;
+            const humidity = document.getElementById('humidity').value;
+            const moisture = document.getElementById('moisture').value;
+            const nitrogen = document.getElementById('nitrogen').value;
+            const potassium = document.getElementById('potassium').value;
+            const phosphorous = document.getElementById('phosphorous').value;
+
+            fetch('/predict', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    features: [soilType, cropType, temperature, humidity, moisture, nitrogen, potassium, phosphorous]
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.recommendation) {
+                    document.getElementById('predictionResult').textContent = `Recommended Fertilizer: ${data.recommendation}`;
+                } else {
+                    document.getElementById('predictionResult').textContent = `Error: ${data.error}`;
+                }
+            })
+            .catch(error => {
+                document.getElementById('predictionResult').textContent = `Error: ${error.message}`;
+            });
+        });
+    </script>
+</body>
+</html>
