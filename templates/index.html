@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fertilizer Recommendation System</title>
+    <title>Fertilizer Prediction</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <style>
         body {
@@ -60,7 +60,7 @@
 </head>
 <body>
     <div class="container mt-5">
-        <h1 class="title">Fertilizer Recommendation</h1>
+        <h1 class="title">Fertilizer Prediction</h1>
         <div class="form-container">
             <form id="predictForm">
                 <div class="form-group">
@@ -95,14 +95,14 @@
                     <label for="phosphorous">Phosphorous (%)</label>
                     <input type="number" class="form-control" id="phosphorous" step="0.1" placeholder="Enter Phosphorous" required>
                 </div>
-                <button type="submit" class="btn btn-primary btn-block">Get Recommendation</button>
+                <button type="submit" class="btn btn-primary btn-block">Predict</button>
             </form>
             <div id="predictionResult" class="prediction-result"></div>
             <button class="btn btn-secondary analytics-btn btn-block" onclick="window.location.href='/analytics'">View Analytics</button>
         </div>
     </div>
     <div class="footer">
-        <p>&copy; 2024 Fertilizer Recommendation System. All rights reserved.</p>
+        <p>&copy; 2024 Fertilizer Prediction. All rights reserved.</p>
     </div>
 
     <script>
