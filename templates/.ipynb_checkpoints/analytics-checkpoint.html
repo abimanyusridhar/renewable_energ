@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Data Analytics</title>
+    <title>Housing Data Analytics</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <style>
         body {
@@ -20,62 +20,126 @@
 
         h2 {
             color: #495057;
-            margin-top: 30px;
-            margin-bottom: 15px;
-            border-bottom: 2px solid #dee2e6;
-            padding-bottom: 10px;
+            margin-top: 15px;
+            margin-bottom: 10px;
         }
 
         .img-fluid {
-            border: 1px solid #dee2e6;
             border-radius: 5px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .card {
             margin-bottom: 30px;
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-header {
+            background-color: #ffffff;
+            border-bottom: 2px solid #dee2e6;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #343a40;
+        }
+
+        .card-body {
+            padding: 20px;
         }
 
         .container {
-            max-width: 1000px;
+            max-width: 1100px;
+        }
+
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+        }
+
+        @media (max-width: 768px) {
+            .row {
+                flex-direction: column;
+            }
+
+            .card {
+                margin-bottom: 20px;
+            }
         }
     </style>
 </head>
 
 <body>
     <div class="container mt-5">
-        <h1 class="text-center">Data Analytics</h1>
+        <h1 class="text-center">Housing Data Analytics</h1>
 
-        <div class="analytics-section">
-            <h2>Distribution of Temperature</h2>
-            <img src="{{ url_for('static', filename='images/temperature_distribution.png') }}" class="img-fluid" alt="Distribution of Temperature">
-        </div>
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-header">
+                        Price Distribution
+                    </div>
+                    <div class="card-body">
+                        <img src="{{ url_for('static', filename='images/price_distribution.png') }}" class="img-fluid" alt="Price Distribution">
+                    </div>
+                </div>
+            </div>
 
-        <div class="analytics-section">
-            <h2>Distribution of Humidity</h2>
-            <img src="{{ url_for('static', filename='images/humidity_distribution.png') }}" class="img-fluid" alt="Distribution of Humidity">
-        </div>
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-header">
+                        Total Square Feet Distribution
+                    </div>
+                    <div class="card-body">
+                        <img src="{{ url_for('static', filename='images/total_sqft_distribution.png') }}" class="img-fluid" alt="Total Square Feet Distribution">
+                    </div>
+                </div>
+            </div>
 
-        <div class="analytics-section">
-            <h2>Distribution of Nitrogen Levels</h2>
-            <img src="{{ url_for('static', filename='images/nitrogen_distribution.png') }}" class="img-fluid" alt="Distribution of Nitrogen Levels">
-        </div>
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-header">
+                        Bathroom Distribution
+                    </div>
+                    <div class="card-body">
+                        <img src="{{ url_for('static', filename='images/bathroom_distribution.png') }}" class="img-fluid" alt="Bathroom Distribution">
+                    </div>
+                </div>
+            </div>
 
-        <div class="analytics-section">
-            <h2>Correlation Heatmap</h2>
-            <img src="{{ url_for('static', filename='images/correlation_heatmap_fertilizer.png') }}" class="img-fluid" alt="Correlation Heatmap">
-        </div>
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-header">
+                        Correlation Heatmap
+                    </div>
+                    <div class="card-body">
+                        <img src="{{ url_for('static', filename='images/correlation_heatmap.png') }}" class="img-fluid" alt="Correlation Heatmap">
+                    </div>
+                </div>
+            </div>
 
-        <div class="analytics-section">
-            <h2>Average Nitrogen Levels by Soil Type</h2>
-            <img src="{{ url_for('static', filename='images/average_nitrogen_by_soil.png') }}" class="img-fluid" alt="Average Nitrogen Levels by Soil Type">
-        </div>
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-header">
+                        Average Price by BHK
+                    </div>
+                    <div class="card-body">
+                        <img src="{{ url_for('static', filename='images/average_price_by_bhk.png') }}" class="img-fluid" alt="Average Price by BHK">
+                    </div>
+                </div>
+            </div>
 
-        <div class="analytics-section">
-            <h2>Average Potassium Levels by Crop Type</h2>
-            <img src="{{ url_for('static', filename='images/average_potassium_by_crop.png') }}" class="img-fluid" alt="Average Potassium Levels by Crop Type">
-        </div>
-
-        <div class="analytics-section">
-            <h2>Distribution of Fertilizers by Type</h2>
-            <img src="{{ url_for('static', filename='images/fertilizer_distribution.png') }}" class="img-fluid" alt="Distribution of Fertilizers by Type">
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-header">
+                        Number of Properties by Location (Top 10)
+                    </div>
+                    <div class="card-body">
+                        <img src="{{ url_for('static', filename='images/properties_by_location.png') }}" class="img-fluid" alt="Properties by Location">
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </body>

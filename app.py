@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify, render_template
-import pickle
-import numpy as np
 import logging
+import joblib
+import numpy as np
 from flask_cors import CORS
 
 app = Flask(__name__)
@@ -10,32 +10,45 @@ CORS(app)
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 
-# Load the trained model, scaler, and label encoders
-def load_artifacts():
-    try:
-        with open('fertilizer_model.pkl', 'rb') as model_file:
-            model = pickle.load(model_file)
-            app.logger.info("Model loaded successfully")
+# Initialize global variables for model, scaler, and label encoders
+model = None
+scaler = None
+label_encoders = None
+feature_columns = None
 
-        with open('fertilizer_scaler.pkl', 'rb') as scaler_file:
-            scaler = pickle.load(scaler_file)
+# Load the trained model, scaler, label encoders, and feature columns
+def load_artifacts():
+    global model, scaler, label_encoders, feature_columns
+    try:
+        with open('house_price_model.pkl', 'rb') as model_file:
+            model = joblib.load(model_file)
+            app.logger.info("Model loaded successfully")
+        
+        with open('scaler.pkl', 'rb') as scaler_file:
+            scaler = joblib.load(scaler_file)
             app.logger.info("Scaler loaded successfully")
 
-        with open('label_encoders.pkl', 'rb') as le_file:
-            label_encoders = pickle.load(le_file)
+        with open('label_encoders.pkl', 'rb') as encoders_file:
+            label_encoders = joblib.load(encoders_file)
             app.logger.info("Label encoders loaded successfully")
-            
-        return model, scaler, label_encoders
+
+        with open('feature_columns.pkl', 'rb') as columns_file:
+            feature_columns = joblib.load(columns_file)
+            app.logger.info("Feature columns loaded successfully")
+
     except Exception as e:
         app.logger.error(f"Error loading artifacts: {e}")
         raise e
 
-# Load artifacts
-model, scaler, label_encoders = load_artifacts()
+# Load artifacts when the application starts
+load_artifacts()
 
+# Home route
 @app.route('/')
 def home():
     return render_template('index.html')
+
+# Prediction route
 @app.route('/predict', methods=['POST'])
 def predict():
     try:
@@ -48,36 +61,35 @@ def predict():
         features = data['features']
         app.logger.info('Raw features: %s', features)
 
-        if len(features) != 8:
-            raise ValueError("Invalid number of features provided.")
+        # Ensure the correct number of features are passed
+        if len(features) != len(feature_columns):
+            raise ValueError(f"Invalid number of features provided. Expected {len(feature_columns)}, got {len(features)}.")
 
-        # Extract and encode soil_type and crop_type (categorical features)
-        soil_type, crop_type = features[0], features[1]
+        # Extract and encode location (first feature)
+        location = features[0]
+        if location not in label_encoders['location'].classes_:
+            raise ValueError(f"Location '{location}' not recognized.")
+        
+        location_encoded = label_encoders['location'].transform([location])[0]
 
-        if soil_type not in label_encoders['Soil Type'].classes_:
-            raise ValueError(f"Soil Type '{soil_type}' not recognized.")
-        if crop_type not in label_encoders['Crop Type'].classes_:
-            raise ValueError(f"Crop Type '{crop_type}' not recognized.")
+        # Extract numerical features (excluding location)
+        numerical_features = np.array(features[1:], dtype=float).reshape(1, -1)
 
-        soil_type_encoded = label_encoders['Soil Type'].transform([soil_type])[0]
-        crop_type_encoded = label_encoders['Crop Type'].transform([crop_type])[0]
-
-        # Extract numerical features
-        numerical_features = np.array(features[2:]).reshape(1, -1)
-
-        # Scale only the numerical features (Temperature, Humidity, etc.)
+        # Scale numerical features
         numerical_features_scaled = scaler.transform(numerical_features)
 
-        # Combine encoded categorical and scaled numerical features
-        final_features = np.concatenate([[soil_type_encoded, crop_type_encoded], numerical_features_scaled[0]])
+        # Combine encoded location and scaled numerical features
+        final_features = np.concatenate([[location_encoded], numerical_features_scaled[0]])
 
         # Predict using the model
         prediction = model.predict([final_features])
         app.logger.info('Prediction: %s', prediction)
 
-        fertilizer_recommendation = label_encoders['Fertilizer Name'].inverse_transform([int(prediction[0])])[0]
+        # Convert log prediction back to normal price
+        predicted_price = np.expm1(prediction[0])  # Using expm1 since we log-transformed the price
 
-        return jsonify({'recommendation': fertilizer_recommendation})
+        return jsonify({'predicted_price': round(predicted_price, 2)})
+
     except ValueError as ve:
         error_message = f"Value Error: {str(ve)}"
         app.logger.error(error_message)
@@ -87,13 +99,11 @@ def predict():
         app.logger.error(error_message)
         return jsonify({'error': error_message}), 500
 
-
-
-
+# Analytics route
 @app.route('/analytics')
 def analytics():
     return render_template('analytics.html')
 
+# Run the app locally
 if __name__ == '__main__':
-    app.run(debug=True, port=5002, use_reloader=False)  # Change port here
-
+    app.run(debug=True, port=5002, use_reloader=False)

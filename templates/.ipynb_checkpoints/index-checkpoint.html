@@ -1,143 +1,186 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fertilizer Recommendation System</title>
+    <title>Housing Price Prediction</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
         body {
-            background-color: #f9fafb;
+            background-color: #f8f9fa;
             font-family: 'Roboto', sans-serif;
         }
+
         .form-container {
             background-color: #ffffff;
             padding: 40px;
-            border-radius: 10px;
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
             max-width: 600px;
-            margin: 60px auto;
+            margin: 40px auto;
         }
+
         .form-group label {
-            color: #333333;
+            color: #495057;
             font-weight: 600;
         }
+
         .form-control {
-            padding: 12px;
+            padding: 14px;
             border-radius: 8px;
-            border: 2px solid #007bff;
+            border: 1.5px solid #6c757d;
         }
+
         .btn-primary {
             background-color: #007bff;
             border-color: #007bff;
-            padding: 12px;
-            font-size: 1.2rem;
+            padding: 14px;
+            font-size: 1.1rem;
+            width: 100%;
         }
-        .btn-primary:hover {
-            background-color: #0056b3;
+
+        .btn-primary:disabled {
+            background-color: #6c757d;
         }
+
         .prediction-result {
-            font-size: 2rem;
+            font-size: 1.6rem;
             font-weight: bold;
             color: #28a745;
             margin-top: 20px;
         }
+
+        .error-message {
+            color: #dc3545;
+            font-weight: bold;
+            margin-top: 15px;
+        }
+
         .title {
             text-align: center;
-            font-size: 2.5rem;
+            font-size: 2rem;
             color: #343a40;
+            margin-bottom: 20px;
         }
-        .footer {
-            text-align: center;
-            margin-top: 40px;
-            font-size: 0.9rem;
-            color: #6c757d;
-        }
+
         .analytics-btn {
             margin-top: 20px;
         }
+
+        .footer {
+            text-align: center;
+            margin-top: 50px;
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+
+        @media (max-width: 768px) {
+            .form-container {
+                padding: 20px;
+                margin: 20px auto;
+            }
+
+            .title {
+                font-size: 1.8rem;
+            }
+        }
     </style>
 </head>
+
 <body>
-    <div class="container mt-5">
-        <h1 class="title">Fertilizer Recommendation</h1>
+    <div class="container">
+        <h1 class="title">Housing Price Prediction</h1>
         <div class="form-container">
             <form id="predictForm">
                 <div class="form-group">
-                    <label for="soil_type">Soil Type</label>
-                    <input type="text" class="form-control" id="soil_type" placeholder="Enter Soil Type" required>
+                    <label for="location">Location</label>
+                    <input type="text" class="form-control" id="location" placeholder="Enter Location" required>
                 </div>
                 <div class="form-group">
-                    <label for="crop_type">Crop Type</label>
-                    <input type="text" class="form-control" id="crop_type" placeholder="Enter Crop Type" required>
+                    <label for="bhk">BHK</label>
+                    <input type="number" class="form-control" id="bhk" placeholder="Enter Number of BHKs" min="1" required>
                 </div>
                 <div class="form-group">
-                    <label for="temperature">Temperature (°C)</label>
-                    <input type="number" class="form-control" id="temperature" step="0.1" placeholder="Enter Temperature" required>
+                    <label for="total_sqft">Total Square Feet</label>
+                    <input type="number" class="form-control" id="total_sqft" placeholder="Enter Total Square Feet" min="1" required>
                 </div>
                 <div class="form-group">
-                    <label for="humidity">Humidity (%)</label>
-                    <input type="number" class="form-control" id="humidity" step="0.1" placeholder="Enter Humidity" required>
+                    <label for="bath">Number of Bathrooms</label>
+                    <input type="number" class="form-control" id="bath" placeholder="Enter Number of Bathrooms" min="1" required>
                 </div>
                 <div class="form-group">
-                    <label for="moisture">Moisture (%)</label>
-                    <input type="number" class="form-control" id="moisture" step="0.1" placeholder="Enter Moisture" required>
+                    <label for="balcony">Number of Balconies</label>
+                    <input type="number" class="form-control" id="balcony" placeholder="Enter Number of Balconies" min="0" required>
                 </div>
-                <div class="form-group">
-                    <label for="nitrogen">Nitrogen (%)</label>
-                    <input type="number" class="form-control" id="nitrogen" step="0.1" placeholder="Enter Nitrogen" required>
-                </div>
-                <div class="form-group">
-                    <label for="potassium">Potassium (%)</label>
-                    <input type="number" class="form-control" id="potassium" step="0.1" placeholder="Enter Potassium" required>
-                </div>
-                <div class="form-group">
-                    <label for="phosphorous">Phosphorous (%)</label>
-                    <input type="number" class="form-control" id="phosphorous" step="0.1" placeholder="Enter Phosphorous" required>
-                </div>
-                <button type="submit" class="btn btn-primary btn-block">Get Recommendation</button>
+                <button type="submit" class="btn btn-primary">Predict Price</button>
             </form>
+
             <div id="predictionResult" class="prediction-result"></div>
+            <div id="errorMessage" class="error-message"></div>
+
             <button class="btn btn-secondary analytics-btn btn-block" onclick="window.location.href='/analytics'">View Analytics</button>
         </div>
     </div>
+
     <div class="footer">
-        <p>&copy; 2024 Fertilizer Recommendation System. All rights reserved.</p>
+        <p>&copy; 2024 Housing Price Prediction System. All rights reserved.</p>
     </div>
 
     <script>
-        document.getElementById('predictForm').addEventListener('submit', function(event) {
+        document.getElementById('predictForm').addEventListener('submit', function (event) {
             event.preventDefault();
-            const soilType = document.getElementById('soil_type').value;
-            const cropType = document.getElementById('crop_type').value;
-            const temperature = document.getElementById('temperature').value;
-            const humidity = document.getElementById('humidity').value;
-            const moisture = document.getElementById('moisture').value;
-            const nitrogen = document.getElementById('nitrogen').value;
-            const potassium = document.getElementById('potassium').value;
-            const phosphorous = document.getElementById('phosphorous').value;
 
+            const location = document.getElementById('location').value.trim();
+            const bhk = parseInt(document.getElementById('bhk').value);
+            const total_sqft = parseFloat(document.getElementById('total_sqft').value);
+            const bath = parseInt(document.getElementById('bath').value);
+            const balcony = parseInt(document.getElementById('balcony').value);
+
+            // Clear previous results
+            document.getElementById('predictionResult').textContent = '';
+            document.getElementById('errorMessage').textContent = '';
+
+            // Basic validation
+            if (!location || bhk <= 0 || total_sqft <= 0 || bath <= 0 || balcony < 0) {
+                document.getElementById('errorMessage').textContent = "Please enter valid values for all fields.";
+                return;
+            }
+
+            // Disable button and show loading text
+            const predictButton = document.querySelector('.btn-primary');
+            predictButton.textContent = 'Predicting...';
+            predictButton.disabled = true;
+
+            // Send request to Flask API
             fetch('/predict', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    features: [soilType, cropType, temperature, humidity, moisture, nitrogen, potassium, phosphorous]
+                    features: [location, bhk, total_sqft, bath, balcony]
                 })
             })
-            .then(response => response.json())
-            .then(data => {
-                if (data.recommendation) {
-                    document.getElementById('predictionResult').textContent = `Recommended Fertilizer: ${data.recommendation}`;
-                } else {
-                    document.getElementById('predictionResult').textContent = `Error: ${data.error}`;
-                }
-            })
-            .catch(error => {
-                document.getElementById('predictionResult').textContent = `Error: ${error.message}`;
-            });
+                .then(response => response.json())
+                .then(data => {
+                    if (data.predicted_price) {
+                        document.getElementById('predictionResult').textContent = `Predicted Price: ₹${data.predicted_price}`;
+                    } else {
+                        document.getElementById('errorMessage').textContent = `Error: ${data.error}`;
+                    }
+                })
+                .catch(error => {
+                    document.getElementById('errorMessage').textContent = `Error: ${error.message}`;
+                })
+                .finally(() => {
+                    // Re-enable button
+                    predictButton.textContent = 'Predict Price';
+                    predictButton.disabled = false;
+                });
         });
     </script>
 </body>
+
 </html>
