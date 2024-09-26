@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crime Data Analytics</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            text-align: center;
+        }
+        img {
+            width: 80%;
+            height: auto;
+            margin: 20px 0;
+        }
+        h1 {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Crime Data Visualization</h1>
+        <!-- Display the pre-saved image -->
+        <img src="{{ url_for('static', filename='images/city_vs_crime_types.png') }}" alt="Crime Rate Visualization">
+    </div>
+</body>
+</html>
