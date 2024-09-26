@@ -1,82 +1,90 @@
-from flask import Flask, request, render_template 
-import pickle 
-import math
-import matplotlib.pyplot as plt
- 
-model = pickle.load (open ('Model/model.pkl', 'rb')) 
- 
-app = Flask (__name__) 
- 
- 
-@app.route ('/') 
-def index (): 
-    return render_template ("index.html") 
-def generate_visualization():
-    output_dir = 'static/images'
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
+from flask import Flask, request, render_template
+import pickle
+import numpy as np
+import pandas as pd
+import os
+from tensorflow.keras.models import load_model
 
-    # Create subplots
-    fig, ax = plt.subplots(11, 1, figsize=(10, 50))
+app = Flask(__name__)
 
-    # Generate the bar plots
-    for i in range(0, 11):
-        ax[i].barh(dataset['City'], dataset[dataset.columns[i+2]], 0.6, color='Salmon')
-        ax[i].set_title('City vs ' + dataset.columns[i+2])
+# Load the trained model (HDF5 format, since Keras models use this format)
+model_path = 'energy_generation_model.h5'
+if not os.path.exists(model_path):
+    raise FileNotFoundError(f"Model file not found: {model_path}")
 
-    # Save the figure
-    output_path = os.path.join(output_dir, 'city_vs_attributes.png')
-    plt.savefig(output_path)
+try:
+    model = load_model(model_path)
+except Exception as e:
+    print(f"Error loading model: {e}")
+    raise
 
-# Define route to the analytics page
-@app.route('/analytics')
-def analytics():
-    # Call the function to generate the visualization
-    generate_visualization()
-    # Render the HTML template to display the visualization
-    return render_template('analytics.html')
+# Load the scalers and encoders
+with open('scaler.pkl', 'rb') as f:
+    scaler = pickle.load(f)
 
- 
- 
-@app.route ('/predict', methods =['POST']) 
-def predict_result (): 
-    
-    city_names = { '0': 'Ahmedabad', '1': 'Bengaluru', '2': 'Chennai', '3': 'Coimbatore', '4': 'Delhi', '5': 'Ghaziabad', '6': 'Hyderabad', '7': 'Indore', '8': 'Jaipur', '9': 'Kanpur', '10': 'Kochi', '11': 'Kolkata', '12': 'Kozhikode', '13': 'Lucknow', '14': 'Mumbai', '15': 'Nagpur', '16': 'Patna', '17': 'Pune', '18':'Surat'}
-    
-    crimes_names = { '0': 'Crime Committed by Juveniles', '1': 'Crime against SC', '2': 'Crime against ST', '3': 'Crime against Senior Citizen', '4': 'Crime against children', '5': 'Crime against women', '6': 'Cyber Crimes', '7': 'Economic Offences', '8': 'Kidnapping', '9':'Murder'}
-    
-    population = { '0': 63.50, '1': 85.00, '2': 87.00, '3': 21.50, '4': 163.10, '5': 23.60, '6': 77.50, '7': 21.70, '8': 30.70, '9': 29.20, '10': 21.20, '11': 141.10, '12': 20.30, '13': 29.00, '14': 184.10, '15': 25.00, '16': 20.50, '17': 50.50, '18':45.80}
-    
-    city_code = request.form["city"] 
-    crime_code = request.form['crime'] 
-    year = request.form['year'] 
-    pop = population[city_code] 
+with open('state_encoder.pkl', 'rb') as f:
+    state_encoder = pickle.load(f)
 
-    # Here increasing / decreasing the population as per the year.
-    # Assuming that the population growth rate is 1% per year.
-    year_diff = int(year) - 2011;
-    pop = pop + 0.01*year_diff*pop
+with open('station_encoder.pkl', 'rb') as f:
+    station_encoder = pickle.load(f)
 
-    
-    crime_rate = model.predict ([[year, city_code, pop, crime_code]])[0] 
-    
-    city_name = city_names[city_code] 
-    
-    crime_type =  crimes_names[crime_code] 
-    
-    if crime_rate <= 1:
-        crime_status = "Very Low Crime Area" 
-    elif crime_rate <= 5:
-        crime_status = "Low Crime Area"
-    elif crime_rate <= 15:
-        crime_status = "High Crime Area"
-    else:
-        crime_status = "Very High Crime Area" 
-    
-    cases = math.ceil(crime_rate * pop)
-    
-    return render_template('result.html', city_name=city_name, crime_type=crime_type, year=year, crime_status=crime_status, crime_rate=crime_rate, cases=cases, population=pop)
+with open('type_encoder.pkl', 'rb') as f:
+    type_encoder = pickle.load(f)
+
+
+@app.route('/')
+def home():
+    return render_template('index.html')
+
+@app.route('/predict', methods=['POST'])
+def predict():
+    try:
+        # Extract form data
+        energy_type = request.form['type']
+        state_name = request.form['state_name']
+        station = request.form['station']
+        installed_capacity = float(request.form['installed_capacity'])
+        date = request.form['date']
+        sector = request.form['sector']
+        owner = request.form['owner']
+
+        # Extract date components
+        year = int(date.split('-')[0])
+        month = int(date.split('-')[1])
+        day_of_week = pd.to_datetime(date).dayofweek
+
+        # Apply the necessary cyclical transformations for the date components
+        month_sin = np.sin(2 * np.pi * month / 12)
+        month_cos = np.cos(2 * np.pi * month / 12)
+        day_of_week_sin = np.sin(2 * np.pi * day_of_week / 7)
+        day_of_week_cos = np.cos(2 * np.pi * day_of_week / 7)
+        quarter = (month - 1) // 3 + 1
+
+        # Encode the categorical inputs
+        state_encoded = state_encoder.transform([state_name])[0]
+        station_encoded = station_encoder.transform([station])[0]
+        type_encoded = type_encoder.transform([energy_type])[0]
+
+
+        # Create an input array with all features (make sure feature order matches the model)
+        input_features = np.array([[state_encoded, station_encoded, sector, owner, type_encoded, installed_capacity, 
+                                    month_sin, month_cos, day_of_week_sin, day_of_week_cos, year, quarter]])
+
+        # Scale the input features
+        input_features_scaled = scaler.transform(input_features)
+
+        # Make a prediction
+        prediction = model.predict(input_features_scaled)
+
+        # Format the prediction to two decimal places
+        predicted_value = round(prediction[0][0], 2)
+
+        # Pass the prediction to the template
+        return render_template('index.html', prediction=predicted_value)
+
+    except Exception as e:
+        return f"An error occurred: {str(e)}"
 
 if __name__ == '__main__':
-    # app.run (debug = False, host='0.0.0.0', port=5000) 
-    app.run(debug = False)
+    app.run(debug=True)
+
